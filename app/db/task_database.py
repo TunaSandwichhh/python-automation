@@ -16,7 +16,7 @@ class TaskDatabase:
             return conn
         except Error as e:
             print(e)
-        return None
+            raise e
 
     def create_table(self):
         """Create a table in the SQLite database"""
@@ -25,19 +25,20 @@ class TaskDatabase:
                                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                                         description TEXT NOT NULL,
                                         due_date TEXT NOT NULL,
+                                        to_number TEXT NOT NULL,
                                         status INTEGER NOT NULL DEFAULT 0
-                                    );"""
+                                        );"""
             cursor = self.conn.cursor()
             cursor.execute(sql_create_tasks_table)
         except Error as e:
             print(e)
 
-    def add_task(self, description, due_date, status=0):
+    def add_task(self, description, due_date, to_number, status=0):
         """Add a new task to the tasks table"""
-        sql = ''' INSERT INTO tasks(description, due_date, status)
-                  VALUES(?,?,?) '''
+        sql = ''' INSERT INTO tasks(description, due_date, to_number, status)
+                VALUES(?,?,?,?) '''
         cursor = self.conn.cursor()
-        cursor.execute(sql, (description, due_date, status))
+        cursor.execute(sql, (description, due_date, to_number, status))
         self.conn.commit()
         return cursor.lastrowid
 
@@ -68,12 +69,12 @@ class TaskDatabase:
         return row
 
     def get_all_tasks(self):
-        """Query all rows in the tasks table"""
+        """Query all rows in the tasks table and return them as a list of dictionaries"""
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM tasks")
-
+        cursor.execute("SELECT id, description, due_date, to_number, status FROM tasks")
         rows = cursor.fetchall()
-        return rows
+        tasks = [{'id': row[0], 'description': row[1], 'due_date': row[2], 'to_number': row[3], 'status': row[4]} for row in rows]
+        return tasks
 
     def close_connection(self):
         """Close the database connection"""

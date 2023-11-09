@@ -6,7 +6,7 @@ class NotificationLogDB:
         self.db_file = db_file
         self.conn = self.create_connection()
 
-        if self.conn():
+        if self.conn:
             self.create_table()
 
     def create_connection(self):
@@ -16,7 +16,7 @@ class NotificationLogDB:
             return conn
         except Error as e:
             print(e)
-        return None
+            raise e
 
     def create_table(self):
         """Create a table in the SQLite database to log notifications"""
